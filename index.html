@@ -1,14 +1,184 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <title>Calendario de quemas — MODIS + VIIRS armonizados</title>
-  <meta http-equiv="refresh" content="0; url='./Calendario%20de%20quemas%20%E2%80%94%20MODIS%20+%20VIIRS%20armonizados/index.html'">
-  <script>
-    window.location.replace("./Calendario%20de%20quemas%20%E2%80%94%20MODIS%20+%20VIIRS%20armonizados/index.html");
-  </script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calendario de quemas</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <p>Redirigiendo a <a href="./Calendario%20de%20quemas%20%E2%80%94%20MODIS%20+%20VIIRS%20armonizados/index.html">Calendario de quemas — MODIS + VIIRS armonizados</a>…</p>
+<div id="loading" role="status"><div id="load-msg"></div><div class="bar"><i id="load-bar"></i></div></div>
+
+<header class="top">
+  <div>
+    <h1 data-i18n="title"></h1>
+    <p data-i18n="subtitle"></p>
+  </div>
+  <button class="lang" id="btn-lang" type="button" aria-label="Español / English"></button>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button class="tab" role="tab" id="tab-explore" aria-selected="true" aria-controls="view-explore" data-i18n="tab_explore" type="button"></button>
+  <button class="tab" role="tab" id="tab-harm" aria-selected="false" aria-controls="view-harm" data-i18n="tab_harm" type="button"></button>
+  <button class="tab" role="tab" id="tab-forecast" aria-selected="false" aria-controls="view-forecast" data-i18n="tab_forecast" type="button"></button>
+  <button class="tab" role="tab" id="tab-about" aria-selected="false" aria-controls="view-about" data-i18n="tab_about" type="button"></button>
+</nav>
+
+<div class="filters">
+  <div class="filters-in">
+    <label class="fld"><span data-i18n="f_region"></span><select id="f-region"></select></label>
+    <label class="fld xo"><span data-i18n="f_from"></span><input type="date" id="f-from"></label>
+    <label class="fld xo"><span data-i18n="f_to"></span><input type="date" id="f-to"></label>
+    <div class="presets xo" id="presets" role="group">
+      <button class="chip" type="button" data-preset="all" data-i18n="p_all" title="2000-11 – 2025-12"></button>
+      <button class="chip" type="button" data-preset="viirs" data-i18n="p_viirs" title="2012-02 – 2025-12"></button>
+      <button class="chip" type="button" data-preset="10" data-i18n="p_10"></button>
+      <button class="chip" type="button" data-preset="5" data-i18n="p_5"></button>
+    </div>
+    <label class="fld xo"><span data-i18n="f_metric"></span><select id="f-metric"></select></label>
+  </div>
+</div>
+
+<main>
+  <section id="view-explore" role="tabpanel" aria-labelledby="tab-explore">
+    <div class="grid-top">
+      <div class="card" id="card-map">
+        <div class="card-h">
+          <div><h2 data-i18n="map_t"></h2><p class="sub" id="map-sub" data-i18n="map_s"></p></div>
+          <div class="ctl">
+            <div class="seg" role="group" aria-label="Modo">
+              <button type="button" id="mm-state" aria-pressed="true" data-i18n="mm_state"></button>
+              <button type="button" id="mm-rect" aria-pressed="false" data-i18n="mm_rect"></button>
+            </div>
+            <button class="btn" type="button" id="btn-all" data-i18n="btn_all"></button>
+          </div>
+        </div>
+        <div class="ctl" style="margin-bottom:10px;align-items:flex-end">
+          <label class="fld"><span data-i18n="map_layer"></span><select id="map-layer" class="sm" style="min-width:230px"></select></label>
+          <label class="ctl" style="gap:6px;min-height:36px" id="map-log-w"><input type="checkbox" id="map-log"><span data-i18n="map_log"></span></label>
+        </div>
+        <div id="map-wrap"><canvas id="map" role="img"></canvas></div>
+        <div class="map-foot"><div id="map-info"></div><div class="lgd" id="map-lgd"></div></div>
+      </div>
+      <div class="col">
+        <div class="card" id="card-kpi">
+          <div class="region-line" id="region-line"></div>
+          <div class="kpis" id="kpis"></div>
+        </div>
+        <div class="card" id="card-exp">
+          <div class="card-h"><div><h2 data-i18n="exp_t"></h2><p class="sub" data-i18n="exp_s"></p></div></div>
+          <div class="exports">
+            <button class="btn primary wide" type="button" id="ex-points"><span id="ex-points-l"></span><small id="ex-points-s"></small></button>
+            <button class="btn" type="button" id="ex-daily"><span data-i18n="ex_daily"></span><small data-i18n="ex_daily_s"></small></button>
+            <button class="btn" type="button" id="ex-monthly"><span data-i18n="ex_monthly"></span><small data-i18n="ex_monthly_s"></small></button>
+            <button class="btn" type="button" id="ex-png"><span data-i18n="ex_png"></span><small data-i18n="ex_png_s"></small></button>
+            <button class="btn" type="button" id="ex-mappng"><span data-i18n="ex_mappng"></span><small data-i18n="ex_mappng_s"></small></button>
+          </div>
+          <p class="note" data-i18n="exp_note"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="card-cal" style="margin-top:16px">
+      <div class="card-h">
+        <div><h2 data-i18n="cal_t"></h2><p class="sub" data-i18n="cal_s"></p></div>
+        <div class="ctl">
+          <div class="seg" role="group" aria-label="Escala">
+            <button type="button" id="cm-count" aria-pressed="true" data-i18n="cal_count"></button>
+            <button type="button" id="cm-anom" aria-pressed="false" data-i18n="cal_anom"></button>
+          </div>
+          <button class="btn" type="button" id="cal-toggle" data-i18n="cal_table"></button>
+        </div>
+      </div>
+      <div id="cal" class="chart"></div>
+      <div id="cal-tbl" class="tbl-wrap" hidden></div>
+      <div class="legend" id="cal-lgd"></div>
+    </div>
+
+    <div class="two" style="margin-top:16px">
+      <div class="card">
+        <div class="card-h">
+          <div><h2 data-i18n="seas_t"></h2><p class="sub" data-i18n="seas_s"></p></div>
+          <label class="fld"><span data-i18n="ref_year"></span><select id="f-ref" class="sm"></select></label>
+        </div>
+        <div id="seas" class="chart"></div>
+        <div class="legend" id="seas-lgd"></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><div><h2 data-i18n="series_t"></h2><p class="sub" data-i18n="series_s"></p></div></div>
+        <div id="series" class="chart"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-h"><div><h2 id="daily-t"></h2><p class="sub" data-i18n="daily_s"></p></div></div>
+      <div id="daily" class="chart"></div>
+      <div class="legend" id="daily-lgd"></div>
+    </div>
+  </section>
+
+  <section id="view-harm" role="tabpanel" aria-labelledby="tab-harm" hidden>
+    <div class="card">
+      <div class="card-h"><div><h2 data-i18n="harm_t"></h2><p class="sub" data-i18n="harm_s"></p></div>
+        <label class="ctl" style="gap:6px"><input type="checkbox" id="hm-raw"><span data-i18n="hm_show_raw"></span></label></div>
+      <div class="metrics" id="harm-metrics"></div>
+      <div id="harm" class="chart"></div>
+      <div class="legend" id="harm-lgd"></div>
+      <p class="note" data-i18n="hm_note_state"></p>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-h"><div><h2 data-i18n="k_t"></h2><p class="sub" data-i18n="k_s"></p></div></div>
+      <div id="kchart" class="chart"></div>
+      <div class="legend" id="k-lgd"></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-h"><div><h2 data-i18n="val_t"></h2><p class="sub" data-i18n="val_s"></p></div></div>
+      <div id="val-tables"></div>
+    </div>
+  </section>
+
+  <section id="view-forecast" role="tabpanel" aria-labelledby="tab-forecast" hidden>
+    <div class="card">
+      <div class="card-h">
+        <div><h2 data-i18n="fc_t"></h2><p class="sub" data-i18n="fc_s"></p></div>
+        <div class="ctl" style="align-items:flex-end">
+          <label class="fld"><span data-i18n="fc_origin"></span><input type="date" id="fc-origin"></label>
+          <button class="btn" type="button" id="fc-last" data-i18n="fc_last"></button>
+          <div class="seg" role="group" aria-label="Horizonte">
+            <button type="button" id="fg-day" aria-pressed="true" data-i18n="fc_day"></button>
+            <button type="button" id="fg-week" aria-pressed="false" data-i18n="fc_week"></button>
+            <button type="button" id="fg-month" aria-pressed="false" data-i18n="fc_month"></button>
+          </div>
+          <button class="btn" type="button" id="fc-toggle" data-i18n="cal_table"></button>
+          <button class="btn primary" type="button" id="fc-dl" data-i18n="fc_dl"></button>
+        </div>
+      </div>
+      <div class="metrics" id="fc-kpis"></div>
+      <div id="fc" class="chart"></div>
+      <div id="fc-tbl" class="tbl-wrap" hidden></div>
+      <div class="legend" id="fc-lgd"></div>
+      <p class="note" id="fc-note"></p>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-h"><div><h2 data-i18n="fc_bt_t"></h2><p class="sub" id="fc-bt-s"></p></div></div>
+      <div id="fc-bt"></div>
+      <p class="note" data-i18n="fc_bt_note"></p>
+    </div>
+  </section>
+
+  <section id="view-about" role="tabpanel" aria-labelledby="tab-about" hidden>
+    <div class="card"><div class="prose" id="about"></div></div>
+  </section>
+</main>
+
+<div id="tip" role="tooltip"></div>
+<div id="toast" role="status"></div>
+<script src="i18n.js"></script>
+<script src="forecast.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
