@@ -1,0 +1,35 @@
+\begin{titlepage}
+\thispagestyle{empty}
+\setlength{\parindent}{0pt}
+\newgeometry{margin=2.4cm}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[azulIPN] (current page.north west) rectangle ([yshift=-5.2cm]current page.north east);
+  \fill[rojoIPN] ([yshift=-5.2cm]current page.north west) rectangle ([yshift=-5.35cm]current page.north east);
+  \node[anchor=north west,text=white,align=left,inner sep=0pt,font=\sffamily] at ([xshift=2.4cm,yshift=-1.5cm]current page.north west)
+    {{\Large\bfseries Instituto Politécnico Nacional}\\[5pt]
+     {\large Campus Puebla}\\[22pt]
+     {\small NASA Space Apps Challenge 2026 \textbullet\ Reto «MODIS and VIIRS Hot Spots»}};
+\end{tikzpicture}\par
+\vspace*{3.9cm}
+
+{\sffamily\bfseries\fontsize{30}{34}\selectfont\color{azulIPN} Calendario de quemas}\\[10pt]
+{\sffamily\Large\color{grisIPN} Armonización de hotspots MODIS y VIIRS y pronóstico para México, 2000--2025}
+
+\vspace{1.0cm}
+{\sffamily\bfseries\large\color{rojoIPN} Procedimiento matemático y análisis estadístico}\\[4pt]
+{\sffamily\color{grisIPN} Documento técnico para el equipo: cada fórmula se deduce paso a paso, se justifica y se interpreta.}
+
+\vfill
+\begin{tcolorbox}[colback=azulclaro,colframe=azulclaro,arc=3pt,left=12pt,right=12pt,top=10pt,bottom=10pt]
+{\sffamily\bfseries\color{azulIPN} Equipo}\\[4pt]
+\sffamily
+Marcos Rodolfo Macías Mondragón\\
+Lina Ariel Limón Cortés\\
+Joel Morales Gutierrez\\
+Alejandro David Zacatelco Escobar
+\end{tcolorbox}
+
+\vspace{0.6cm}
+{\sffamily\color{grisIPN} Puebla, Puebla \;\textbullet\; noviembre de 2026}
+\restoregeometry
+\end{titlepage}

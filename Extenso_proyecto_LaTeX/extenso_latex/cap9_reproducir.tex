@@ -1,0 +1,54 @@
+\chapter{Cómo reproducir los resultados}\label{cap:repro}
+
+Todo está en el paquete \texttt{calendario\_quemas}. La tabla~\ref{tab:scripts} relaciona cada parte de este documento con el código que la produce.
+
+\begin{table}[H]
+\centering
+\caption{Dónde está el código de cada parte.}\label{tab:scripts}
+\small
+\begin{tabularx}{\textwidth}{@{}lXl@{}}
+\toprule
+Capítulo & Qué hace & Archivo \\
+\midrule
+\ref{cap:datos} & Carga los parquet de FIRMS y unifica el esquema de MODIS y VIIRS & \texttt{pipeline/01\_load.py} \\
+\ref{cap:datos} & Filtra (tipo 0, confianza nominal o alta) y asigna estado & \texttt{pipeline/03\_footprints.py} \\
+\ref{cap:factor}, \ref{cap:serie} & Calcula los factores $\widetilde k$ y las series armonizadas & \texttt{pipeline/07\_build.py} \\
+\ref{cap:valid}, \ref{cap:result} & Un año fuera, años no vistos, variantes y Terra a Terra más Aqua & \texttt{pipeline/08\_validation.py} \\
+\ref{sec:tau} & Búsqueda del parámetro $\tau$ (experimentos) & \texttt{pipeline/05\_experiment2.py} \\
+\ref{cap:pron} & Motor del pronóstico (el mismo en el navegador y en Node) & \texttt{app/forecast.js} \\
+\ref{cap:pron} & Rejilla de parámetros con orígenes 2010--2019 & \texttt{pipeline/11\_pronostico\_ajuste.js} \\
+\ref{cap:pron} & Prueba hacia atrás 2020--2025 & \texttt{pipeline/12\_pronostico\_validacion.js} \\
+\ref{cap:pron} & Pronóstico desde el 31 de diciembre de 2025 & \texttt{pipeline/13\_pronostico\_exportar.js} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Comandos}
+
+Para los datos y la validación se requiere Python 3 con \texttt{pandas}, \texttt{numpy}, \texttt{pyarrow}, \texttt{geopandas} y \texttt{shapely}:
+\begin{verbatim}
+python3 pipeline/01_load.py <carpeta_con_parquet> data/all_points.parquet
+python3 pipeline/03_footprints.py data/all_points.parquet \
+        geo/mex_adm1_full.geojson data/points_state.parquet
+python3 pipeline/07_build.py data/points_state.parquet \
+        geo/mex_adm1_full.geojson out
+python3 pipeline/08_validation.py data/points_state.parquet \
+        out/app_data/validacion.json
+\end{verbatim}
+
+Para el pronóstico se requiere Node.js y un archivo \texttt{series.json} con un valor diario por región desde el 1 de noviembre de 2000 (la serie \texttt{hotspots\_armonizados\_estado\_dia.csv}, sumada para «Todo México»):
+\begin{verbatim}
+node pipeline/11_pronostico_ajuste.js     series.json
+node pipeline/12_pronostico_validacion.js series.json \
+     datos_armonizados/validacion_pronostico.csv app/data/validacion.json
+node pipeline/13_pronostico_exportar.js   series.json \
+     datos_armonizados/pronostico_desde_2025-12-31.csv
+\end{verbatim}
+
+\section{Verificación independiente de las cifras de este documento}
+
+Las cifras de validación del capítulo~\ref{cap:result} se reprodujeron, además, de forma independiente a partir de los CSV publicados (\texttt{hotspots\_armonizados\_estado\_mes.csv}): se reconstruyen los arreglos $M$, $V$ y $T$, se vuelve a calibrar y se recalcula el WAPE. Coinciden con \texttt{validacion.json} hasta la cuarta cifra decimal, y la tabla~\ref{tab:tau} sale de ese mismo cálculo. Las tablas y las cifras de este documento se generan con un script a partir de los archivos del paquete (\texttt{repro\_validacion.py} y \texttt{gen\_tablas.py}, incluidos con el código fuente de este documento).
+
+\begin{ideaclave}[Idea clave del capítulo]
+Cada número de la presentación y de este documento se puede regenerar con los scripts del paquete. El único paso que no se puede repetir sin acceso a internet es la descarga de los parquet de FIRMS y de los contornos de geoBoundaries.
+\end{ideaclave}

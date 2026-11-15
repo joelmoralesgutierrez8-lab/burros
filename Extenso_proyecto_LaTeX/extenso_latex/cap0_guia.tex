@@ -1,0 +1,67 @@
+\chapter{Cómo leer este documento}
+
+Este documento explica, con todo el detalle matemático y estadístico, qué hicimos en el proyecto «Calendario de quemas» y por qué cada decisión es razonable. Está escrito para que cualquier compañero del equipo pueda entender el procedimiento sin haber escrito el código, y para que pueda defenderlo ante preguntas del jurado.
+
+\section{El proyecto en una página}
+
+El reto pide una serie de hotspots (detecciones de fuego activo desde el espacio) que sea comparable entre los dos sensores de la NASA, MODIS y VIIRS, una aplicación web para explorarla y un calendario de quemas. Nuestro trabajo tiene tres partes que se apoyan una en la otra:
+
+\begin{enumerate}[label=\arabic*)]
+  \item \textbf{Armonización} (capítulos~\ref{cap:problema} a~\ref{cap:serie}). VIIRS cuenta casi cuatro veces más hotspots que MODIS porque ve con más resolución. Para tener una sola serie, convertimos cada detección de VIIRS en una fracción de «hotspot equivalente a MODIS», con un peso $k$ estimado por estado y por mes.
+  \item \textbf{Validación} (capítulos~\ref{cap:valid} y~\ref{cap:result}). Medimos qué tan bien reproduce la serie armonizada a MODIS en años que el método no utilizó para calibrarse.
+  \item \textbf{Pronóstico} (capítulo~\ref{cap:pron}). Un modelo deliberadamente sencillo (climatología más un ajuste de nivel que se apaga con el horizonte), con intervalos empíricos y una prueba hacia atrás honesta.
+\end{enumerate}
+
+\begin{ideaclave}[Los cuatro resultados que hay que recordar]
+\begin{enumerate}[label=\arabic*.]
+  \item La serie armonizada reproduce a MODIS con un error anual nacional de $1.3\,\%$ (un año fuera, 2012--2019) y de $2.1\,\%$ (años no vistos, 2020--2025).
+  \item Calibrar por estado y por mes baja el error por estado y mes de $24.8\,\%$ a $12.9\,\%$ (un año fuera) y de $21.3\,\%$ a $14.5\,\%$ (años no vistos), frente a un factor único para todo México.
+  \item Dos ideas que parecían buenas (fusionar píxeles de VIIRS y filtrar por potencia radiativa) empeoraron el resultado y se descartaron.
+  \item A escala nacional el pronóstico empata con la climatología y supera con claridad a «igual que el año pasado»; no predice incendios y su valor para 2026 no se pudo verificar.
+\end{enumerate}
+\end{ideaclave}
+
+\section{Convenciones}
+
+\begin{itemize}
+  \item Todas las cifras de este documento salen de los archivos del paquete (\texttt{validacion.json}, las series armonizadas y los resultados de la prueba hacia atrás). Las tablas se generaron con un script a partir de esos archivos, no se teclearon a mano. Los números que reproducimos de nuevo a partir de los CSV publicados coinciden con los del archivo de validación.
+  \item Cuando decimos «error» sin más, nos referimos al error porcentual absoluto ponderado, \WAPE, definido en la sección~\ref{sec:wape}.
+  \item Los cuadros de color tienen un significado fijo: azul para la idea que hay que quedarse; blanco con borde azul para definiciones; gris para ejemplos con datos reales; rojo para advertencias y límites.
+  \item Los símbolos se resumen en la tabla~\ref{tab:simbolos}. Dos letras griegas se parecen y conviene no confundirlas: $\tau$ es el parámetro de contracción de la calibración (valor 100) y $\vartheta$ es la constante de decaimiento del pronóstico (valor 60 días). En el código ambas se llaman \texttt{tau}.
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{Símbolos principales.}\label{tab:simbolos}
+\small
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+Símbolo & Significado \\
+\midrule
+$y,\;m,\;s$ & Año, mes del año ($1,\dots,12$) y estado ($s=1,\dots,32$). \\
+$M_{y,m,s}$ & Número de hotspots de MODIS (Terra más Aqua) tras el filtro común. \\
+$T_{y,m,s}$, $A_{y,m,s}$ & Lo mismo, solo Terra y solo Aqua. Se cumple $M=T+A$. \\
+$V_{y,m,s}$ & Número de detecciones de VIIRS S-NPP tras el filtro común. \\
+$k_{m,s}$ & Factor de calibración: hotspots de MODIS por cada detección de VIIRS en el estado $s$ y el mes $m$. \\
+$k^{V}_{m,s},\;k^{T}_{m,s}$ & Factor de VIIRS a MODIS y factor de Terra a Terra más Aqua. \\
+$\widehat{k},\;\widetilde{k}$ & Estimador por razón y estimador con contracción. \\
+$\tau$ & Intensidad de la contracción en la calibración ($\tau=100$). \\
+$w_i$ & Peso de la detección $i$ en la serie armonizada. \\
+$H_{y,m,s}$ & Hotspots equivalentes a MODIS (serie armonizada). \\
+$S_t$ & Serie diaria de una región en el día $t$ (base del pronóstico). \\
+$T_0$ & Origen del pronóstico: último día observado. \\
+$K,\;\lambda,\;W$ & Años de historia, peso de los años y semiancho de la ventana de la climatología. \\
+$L,\;c_0$ & Días del ajuste de nivel y pseudoconteo de la razón de nivel. \\
+$\vartheta$ & Constante de decaimiento del ajuste de nivel ($\vartheta=60$ días). \\
+$\kappa$ & Pseudoconteo por día del error relativo del intervalo ($\kappa=0.5$). \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Ruta de lectura según lo que se necesite}
+
+\begin{description}[leftmargin=1.2em,style=nextline]
+  \item[Para exponer el proyecto en cinco minutos.] Capítulo~\ref{cap:problema}, secciones~\ref{sec:est-razon} y~\ref{sec:contraccion}, y los resultados del capítulo~\ref{cap:result}.
+  \item[Para defender el método ante preguntas.] Capítulo~\ref{cap:valid} completo y el capítulo~\ref{cap:limites}, que dice con franqueza dónde puede fallar lo que hicimos.
+  \item[Para reproducir o modificar el código.] Capítulo~\ref{cap:repro}.
+\end{description}

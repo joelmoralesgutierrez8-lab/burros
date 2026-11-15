@@ -1,0 +1,74 @@
+\chapter{Datos y preparación}\label{cap:datos}
+
+\section{Fuente y sensores}
+
+Los datos son detecciones de fuego activo del sistema FIRMS de la NASA para México. Hay dos familias de sensores:
+
+\begin{itemize}
+  \item \textbf{MODIS}, a bordo de los satélites \emph{Terra} (desde noviembre de 2000) y \emph{Aqua} (desde julio de 2002). Cada píxel mide aproximadamente $1\times1$ km en el nadir.
+  \item \textbf{VIIRS}, a bordo del satélite \emph{Suomi NPP} (S-NPP), desde enero de 2012. Su píxel es de 375 m, por eso detecta fuegos más pequeños.
+\end{itemize}
+
+Cada detección (\emph{hotspot}) es un píxel con una anomalía térmica. No es un incendio ni una superficie quemada: un mismo incendio grande produce muchos hotspots, y un fuego pequeño puede producir uno solo o ninguno. Esta advertencia vuelve en el capítulo~\ref{cap:limites}.
+
+\section{Variables utilizadas}
+
+De cada registro usamos la fecha de adquisición, la hora, la latitud y la longitud, el satélite, el tipo de fuente (\texttt{type}), la confianza (\texttt{confidence}), el indicador día o noche (\texttt{daynight}) y la potencia radiativa del fuego (\texttt{frp}, en megavatios). Para cargar los archivos y unificar los esquemas de los dos sensores usamos el \texttt{pipeline/01\_load.py}; el resto del procesamiento parte de ese archivo unificado, al que en el código nos referimos como \dato.
+
+\section{Filtro común}
+
+Para que los dos sensores cuenten lo mismo aplicamos exactamente el mismo filtro a todos los datos:
+
+\begin{enumerate}[label=\arabic*)]
+  \item \textbf{Tipo de fuente igual a 0}, es decir, presunto fuego de vegetación. Se descartan volcanes activos, fuentes estáticas y fuegos costa afuera.
+  \item \textbf{Confianza nominal o alta}. En MODIS la confianza es un número de 0 a 100: usamos $\geq 30$ (nominal es de 30 a 79 y alta, de 80 en adelante). En VIIRS la confianza es una clase (\texttt{l}, \texttt{n}, \texttt{h}): usamos \texttt{n} y \texttt{h}.
+  \item \textbf{Fecha hasta el 31 de diciembre de 2025}. Los datos de 2026 no entran.
+\end{enumerate}
+
+\begin{cuidado}[Por qué importa el filtro]
+Si el filtro fuera distinto en cada sensor, parte de la diferencia entre MODIS y VIIRS vendría de reglas de selección y no del instrumento. El factor $k$ del capítulo~\ref{cap:factor} corrige la diferencia de instrumento \emph{dado} un filtro común; con otro filtro habría que volver a estimarlo.
+\end{cuidado}
+
+\section{Asignación a estados}
+
+Cada detección se asigna a una entidad federativa con una cuadrícula auxiliar de $0.01^\circ$ (unos 1.1 km), con origen en $(-118^\circ,\,14^\circ)$. El procedimiento es:
+
+\begin{enumerate}[label=\arabic*)]
+  \item Se calcula la celda $(i_x,i_y)$ de cada detección con $i_x=\lfloor (\text{lon}+118)/0.01\rfloor$ e $i_y=\lfloor (\text{lat}-14)/0.01\rfloor$.
+  \item Se asigna a cada celda distinta el estado cuyo polígono contiene su centro (contornos geoBoundaries gbOpen, nivel ADM1).
+  \item Las celdas cuyo centro cae fuera de todo polígono (casi siempre por la línea de costa) se asignan al estado más cercano. El programa comprueba que la distancia máxima sea menor de 5 km.
+\end{enumerate}
+
+Asignar celdas y no puntos es una cuestión práctica: hay millones de detecciones pero solo unas decenas de miles de celdas distintas, y así los polígonos se consultan pocas veces.
+
+\section{Conteos}
+
+\begin{table}[H]
+\centering
+\caption{Detecciones que pasan el filtro común (noviembre de 2000 a diciembre de 2025).}\label{tab:conteos}
+\begin{tabular}{@{}lr@{}}
+\toprule
+Sensor & Detecciones \\
+\midrule
+\input{tex/tab_conteos.tex}
+\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Los 25 años y 2 meses de la serie son 9\,192 días. Con 32 estados, la tabla estado--día tiene $9\,192\times 32=294\,144$ renglones.
+
+\section{De las detecciones a matrices de conteos}
+
+Todo el análisis de la calibración trabaja con conteos mensuales por estado. Definimos, para cada año $y$, mes $m$ y estado $s$,
+\begin{align*}
+  T_{y,m,s}&=\#\{\text{detecciones de Terra}\},&
+  A_{y,m,s}&=\#\{\text{detecciones de Aqua}\},\\
+  V_{y,m,s}&=\#\{\text{detecciones de S-NPP}\},&
+  M_{y,m,s}&=T_{y,m,s}+A_{y,m,s}.
+\end{align*}
+Son tres arreglos de dimensión $26\times12\times32$ (años 2000 a 2025). Con $M$ como referencia de «lo que MODIS habría contado», el objetivo del capítulo~\ref{cap:factor} es encontrar cómo convertir $V$ en algo comparable con $M$.
+
+\begin{ideaclave}[Idea clave del capítulo]
+Todo parte de una regla de selección común (vegetación, confianza nominal o alta) y de un conteo mensual por estado para cada sensor. Con esos tres arreglos, $M$, $V$ y $T$, se hace todo lo demás.
+\end{ideaclave}

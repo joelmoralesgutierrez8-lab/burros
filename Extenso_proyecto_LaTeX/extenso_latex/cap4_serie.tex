@@ -1,0 +1,68 @@
+\chapter{Construcción de la serie armonizada}\label{cap:serie}
+
+\section{Tres etapas, tres reglas de peso}\label{sec:etapas}
+
+La cobertura de los sensores cambia con el tiempo, así que la serie se arma por etapas. Sea $d_i$ la fecha de la detección $i$.
+
+\begin{definicion}[Pesos de la serie armonizada]
+\begin{align*}
+  w_i=\begin{cases}
+    k^{T}_{m,s} & \text{si } i\text{ es de Terra y } d_i<\text{4 jul 2002 (etapa 1: solo Terra, escalada)},\\[2pt]
+    1 & \text{si } i\text{ es de Terra o Aqua y } \text{4 jul 2002}\le d_i<\text{20 ene 2012 (etapa 2)},\\[2pt]
+    k^{V}_{m,s} & \text{si } i\text{ es de S-NPP (etapa 3, desde el 20 de enero de 2012)},\\[2pt]
+    0 & \text{si } i\text{ es de Terra o Aqua y } d_i\ge\text{20 ene 2012}.
+  \end{cases}
+\end{align*}
+donde $m$ y $s$ son el mes y el estado de la detección $i$.
+\end{definicion}
+
+La serie en la unidad común es la suma de pesos,
+\begin{align*}
+  H_{y,m,s}=\sum_{i\in(y,m,s)}w_i.
+\end{align*}
+
+\begin{enumerate}[label=\arabic*)]
+  \item \textbf{Etapa 1 (1 de noviembre de 2000 a 3 de julio de 2002).} Solo observa Terra. Para llevarla a la unidad de «Terra más Aqua» la multiplicamos por un factor $k^T_{m,s}$ calibrado con 2003--2011 (sección~\ref{sec:terra}).
+  \item \textbf{Etapa 2 (4 de julio de 2002 a 19 de enero de 2012).} Ya observan Terra y Aqua, que es exactamente la unidad de referencia. Cada detección vale 1.
+  \item \textbf{Etapa 3 (desde el 20 de enero de 2012).} Se usa VIIRS con el factor $k^{V}_{m,s}$ de la ecuación~\eqref{eq:ktilde}. MODIS deja de entrar a la serie y se conserva únicamente como referencia para validar.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=0.52cm,y=1cm,font=\small\sffamily]
+  \def\a{0}\def\b{2.6}\def\c{14}\def\d{26.8}
+  \fill[rojoclaro,draw=rojoIPN] (\a,0) rectangle (\b,0.9);
+  \fill[azulclaro,draw=azulIPN] (\b,0) rectangle (\c,0.9);
+  \fill[azulIPN!25,draw=azulIPN] (\c,0) rectangle (\d,0.9);
+  \node at (1.3,0.45) {Etapa 1};\node at (8.3,0.45) {Etapa 2};\node at (20.4,0.45) {Etapa 3};
+  \node[below=2pt,text width=2.4cm,align=center,font=\scriptsize\sffamily] at (1.3,0) {Terra\\ $\times\,k^{T}$};
+  \node[below=2pt,align=center,font=\scriptsize\sffamily] at (8.3,0) {Terra + Aqua\\ peso 1};
+  \node[below=2pt,align=center,font=\scriptsize\sffamily] at (20.4,0) {VIIRS S-NPP\\ $\times\,k^{V}$};
+  \node[above=2pt,font=\scriptsize\sffamily] at (\a,0.9) {nov 2000};
+  \node[above=2pt,font=\scriptsize\sffamily] at (\b,0.9) {jul 2002};
+  \node[above=2pt,font=\scriptsize\sffamily] at (\c,0.9) {ene 2012};
+  \node[above=2pt,font=\scriptsize\sffamily] at (\d,0.9) {dic 2025};
+\end{tikzpicture}
+\caption{Las tres etapas de la serie armonizada. La etapa 1 es la más incierta porque su factor se estima en años posteriores.}\label{fig:etapas}
+\end{figure}
+
+\section{Factor de Terra a Terra más Aqua}\label{sec:terra}
+
+En la etapa 1 aplicamos la misma idea del capítulo~\ref{cap:factor} con otro par de conteos. Se calibra con los años en que Terra y Aqua operan completos y en que aún no hay VIIRS, 2003--2011:
+\begin{align*}
+  \widetilde k^{T}_{m,s}=\frac{\sum_{y=2003}^{2011}M_{y,m,s}+\tau\,\widehat k^{T}_{\mathrm{nac},m}}{\sum_{y=2003}^{2011}T_{y,m,s}+\tau},\qquad
+  \widehat k^{T}_{\mathrm{nac},m}=\frac{\sum_y\sum_sM_{y,m,s}}{\sum_y\sum_sT_{y,m,s}}.
+\end{align*}
+Aquí $M=T+A$, de modo que el factor nacional es mayor que 2: Aqua cuenta un poco más que Terra, y el factor oscila entre $2.07$ y $2.61$ según el mes (figura~\ref{fig:knat}, derecha). Por tanto, a nivel nacional una detección de Terra en 2001 vale entre dos y tres hotspots equivalentes, según el mes.
+
+\begin{cuidado}[La etapa 1 es una extrapolación hacia atrás]
+El factor de Terra se calibra con 2003--2011 y se aplica a 2000--2002. Suponemos que la relación entre Terra y Terra más Aqua no cambió en esos años, algo que no podemos comprobar porque en esa etapa no hay un segundo sensor con el cual compararse. Por eso la presentamos como la parte más incierta de la serie. Su validación (sección~\ref{sec:val-terra}) solo comprueba que el método funciona \emph{dentro} del periodo en que sí se puede medir.
+\end{cuidado}
+
+\section{Resultado: la serie}
+
+La serie armonizada tiene \totalArm{} hotspots equivalentes a MODIS entre noviembre de 2000 y diciembre de 2025. El año con más hotspots equivalentes es 2011 ($100\,017$) y el de menos, entre los años completos, es 2014 ($35\,372$). La tabla estado--mes y la tabla estado--día son las que descarga la aplicación.
+
+\begin{ideaclave}[Idea clave del capítulo]
+La serie usa tres reglas: Terra escalada hasta julio de 2002, Terra más Aqua con peso 1 hasta enero de 2012, y VIIRS con su factor desde entonces. En cualquiera de las tres, un hotspot equivalente es «lo que habría contado MODIS».
+\end{ideaclave}

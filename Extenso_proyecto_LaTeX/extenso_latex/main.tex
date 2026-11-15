@@ -1,0 +1,116 @@
+\documentclass[11pt,a4paper,oneside]{report}
+
+% ---------- codificación, idioma, tipografía ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[main=spanish,provide=*]{babel}
+\emergencystretch=2em
+\setlocalecaption{spanish}{table}{Tabla}
+\setlocalecaption{spanish}{lot}{Índice de tablas}
+\setlocalecaption{spanish}{lof}{Índice de figuras}
+\setlocalecaption{spanish}{figure}{Figura}
+\usepackage[a4paper,top=2.5cm,bottom=2.4cm,left=2.6cm,right=2.6cm]{geometry}
+\usepackage{microtype}
+\usepackage{setspace}
+\setstretch{1.08}
+
+% ---------- matemáticas ----------
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{bm}
+
+% ---------- tablas, listas, figuras ----------
+\usepackage{booktabs,array,tabularx,longtable}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usepackage[most]{tcolorbox}
+\usepackage[colorlinks=true,linkcolor=azulIPN,citecolor=azulIPN,urlcolor=azulIPN,bookmarksnumbered]{hyperref}
+
+% ---------- colores (paleta azul y rojo) ----------
+\definecolor{azulIPN}{HTML}{1F4E9C}
+\definecolor{azulclaro}{HTML}{E8EEF9}
+\definecolor{rojoIPN}{HTML}{C23B2E}
+\definecolor{rojoclaro}{HTML}{FBEDEB}
+\definecolor{grisIPN}{HTML}{5A6475}
+
+% ---------- cajas ----------
+\newtcolorbox{ideaclave}[1][Idea clave]{enhanced,breakable,colback=azulclaro,colframe=azulIPN,
+  fonttitle=\bfseries\sffamily,title={#1},boxrule=0.6pt,arc=2pt,left=8pt,right=8pt,top=5pt,bottom=5pt,before skip=10pt,after skip=10pt}
+\newtcolorbox{definicion}[1][Definición]{enhanced,breakable,colback=white,colframe=azulIPN,
+  fonttitle=\bfseries\sffamily,title={#1},boxrule=0.6pt,arc=2pt,left=8pt,right=8pt,top=5pt,bottom=5pt,before skip=10pt,after skip=10pt}
+\newtcolorbox{ejemplo}[1][Ejemplo con datos reales]{enhanced,breakable,colback=white,colframe=grisIPN,
+  fonttitle=\bfseries\sffamily,title={#1},boxrule=0.6pt,arc=2pt,left=8pt,right=8pt,top=5pt,bottom=5pt,before skip=10pt,after skip=10pt}
+\newtcolorbox{cuidado}[1][Cuidado]{enhanced,breakable,colback=rojoclaro,colframe=rojoIPN,
+  fonttitle=\bfseries\sffamily,title={#1},boxrule=0.6pt,arc=2pt,left=8pt,right=8pt,top=5pt,bottom=5pt,before skip=10pt,after skip=10pt}
+
+% ---------- títulos ----------
+\titleformat{\chapter}[hang]{\sffamily\bfseries\LARGE\color{azulIPN}}{\thechapter}{0.7em}{}[{\color{azulIPN}\titlerule}]
+\titlespacing*{\chapter}{0pt}{-6pt}{18pt}
+\titleformat{\section}{\sffamily\bfseries\Large\color{azulIPN}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\sffamily\bfseries\large\color{grisIPN}}{\thesubsection}{0.6em}{}
+\captionsetup{font=small,labelfont={bf,sf},labelsep=period}
+\setlist[itemize]{itemsep=2pt,topsep=4pt}
+\setlist[enumerate]{itemsep=2pt,topsep=4pt}
+\renewcommand{\arraystretch}{1.18}
+
+% ---------- encabezado y pie ----------
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\sffamily\color{grisIPN}Calendario de quemas}
+\fancyhead[R]{\small\sffamily\color{grisIPN}\leftmark}
+\fancyfoot[C]{\small\sffamily\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\small\sffamily\thepage}\renewcommand{\headrulewidth}{0pt}}
+
+% ---------- macros ----------
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\CV}{\operatorname{CV}}
+\newcommand{\Pois}{\operatorname{Pois}}
+\newcommand{\Bin}{\operatorname{Bin}}
+\newcommand{\Beta}{\operatorname{Beta}}
+\newcommand{\WAPE}{\ensuremath{\operatorname{WAPE}}}
+\newcommand{\ind}{\mathbb{1}}
+\newcommand{\dato}{\texttt{data}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+% ---------- números generados desde los resultados ----------
+\input{tex/num_terra.tex}
+\input{tex/num_piso.tex}
+\input{tex/num_misc.tex}
+
+\begin{document}
+\input{portada.tex}
+
+\pagenumbering{roman}
+\setcounter{page}{1}
+\tableofcontents
+\clearpage
+\listoffigures
+\listoftables
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input{cap0_guia.tex}
+\input{cap1_datos.tex}
+\input{cap2_problema.tex}
+\input{cap3_factor.tex}
+\input{cap4_serie.tex}
+\input{cap5_validacion.tex}
+\input{cap6_resultados.tex}
+\input{cap7_pronostico.tex}
+\input{cap8_limites.tex}
+\input{cap9_reproducir.tex}
+\appendix
+\input{anexos.tex}
+
+\end{document}

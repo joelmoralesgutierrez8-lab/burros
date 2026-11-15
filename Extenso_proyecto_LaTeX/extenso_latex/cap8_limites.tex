@@ -1,0 +1,29 @@
+\chapter{Límites y amenazas a la validez}\label{cap:limites}
+
+Un buen análisis dice dónde puede fallar. Esta es la lista que debemos tener presente al presentar el proyecto, ordenada de lo más importante a lo más técnico.
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Un hotspot no es un incendio ni una superficie quemada.} Un incendio grande genera muchos hotspots y un fuego pequeño puede generar uno o ninguno. La serie mide detecciones térmicas de satélite, y no hectáreas ni daños.
+
+  \item \textbf{Validamos contra MODIS, no contra la realidad.} La armonización consiste en reproducir el conteo que habría dado MODIS. Si MODIS tiene sesgos (nubes, hora de paso, fuegos pequeños que no ve), la serie armonizada los hereda.
+
+  \item \textbf{El factor se supone estable en el tiempo.} El modelo de la sección~\ref{sec:modelo} supone que la relación entre sensores no cambia entre años. Los resultados de 2020--2025 son compatibles con esa estabilidad (sesgo de $+0.39\,\%$), pero cualquier cambio en la hora de paso o en el desempeño de los satélites la rompería. Terra y Aqua ya no mantienen su órbita original y su hora de paso cambia con los años (información pública de la NASA que no verificamos con los datos de este proyecto); no lo modelamos.
+
+  \item \textbf{La etapa 2000--2002 es una extrapolación hacia atrás.} Su factor de Terra se calibró con 2003--2011 (sección~\ref{sec:terra}), y no hay con qué compararla.
+
+  \item \textbf{Los conteos reales están sobredispersos.} Las fórmulas de varianza del capítulo~\ref{cap:factor} suponen Poisson e independencia, y los fuegos se agrupan en el espacio y el tiempo. Son una referencia de orden de magnitud: la incertidumbre real es mayor.
+
+  \item \textbf{Elecciones que miraron los datos de prueba.} El parámetro $\tau$ de la contracción se escogió mirando ambos ejercicios, incluido 2020--2025 (sección~\ref{sec:tau}); y los periodos objetivo de los últimos orígenes del ajuste del pronóstico llegan a 2020. El efecto es pequeño en ambos casos, pero la prueba no es perfectamente virgen. Además, $K=12$ y $\lambda=1$ están en el borde de la rejilla del pronóstico.
+
+  \item \textbf{Las pruebas del pronóstico se traslapan.} Los orígenes semanales tienen horizontes que se superponen, así que las muestras no son independientes y no damos errores estándar. Diferencias de décimas de punto entre el modelo y la climatología no son interpretables.
+
+  \item \textbf{El pronóstico no usa clima ni otras variables.} Es un modelo de conteos que repite la estacionalidad con un ajuste de nivel. No incorpora sequía, temperatura, humedad ni El Niño, que sí influyen en la actividad de un año. El pronóstico de 2026 no se pudo verificar.
+
+  \item \textbf{Errores grandes en escalas pequeñas.} Por estado el error mediano del pronóstico es de $45$ a $78\,\%$, y en estados con pocos hotspots puede pasar de $100\,\%$. Las celdas de $0.25^\circ$ de la aplicación tienen más dispersión aún; hay que leer rectángulos pequeños con cautela.
+
+  \item \textbf{Cobertura de datos.} Solo se usaron MODIS (Terra y Aqua) y VIIRS S-NPP hasta el 31 de diciembre de 2025. No entran VIIRS NOAA-20 ni NOAA-21, ni los datos de 2026 en tiempo casi real.
+\end{enumerate}
+
+\begin{ideaclave}[Cómo presentar estos límites]
+Decirlos de frente fortalece el proyecto. Los números que sí afirmamos (error anual de $1$ a $2\,\%$, error por estado y mes de $13$ a $15\,\%$, pronóstico nacional a la par de la climatología) salen de pruebas con datos que el método no usó, y cada uno trae una condición que ya está dicha en este capítulo.
+\end{ideaclave}

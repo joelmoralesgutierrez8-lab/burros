@@ -1,0 +1,88 @@
+\chapter{Tablas de apoyo}
+
+\section{Factores nacionales por mes}
+
+La tabla~\ref{tab:knat} contiene los factores nacionales que sirven de centro de la contracción (ecuación~\eqref{eq:ktilde}). La columna $1/\widehat k^{V}_{\mathrm{nac}}$ dice cuántas detecciones de VIIRS equivalen a un hotspot de MODIS.
+
+\begin{table}[H]
+\centering
+\caption{Factores nacionales. $\widehat k^{V}_{\mathrm{nac}}$ se calibró con 2012--2019 (sin enero de 2012) y $\widehat k^{T}_{\mathrm{nac}}$, con 2003--2011.}\label{tab:knat}
+\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Mes & $\widehat k^{V}_{\mathrm{nac}}$ & $1/\widehat k^{V}_{\mathrm{nac}}$ & $\widehat k^{T}_{\mathrm{nac}}$ \\
+\midrule
+\input{tex/tab_knat.tex}
+\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Pronóstico mensual de 2026 para México}
+
+\begin{table}[H]
+\centering
+\caption{Pronóstico desde el 31 de diciembre de 2025 (hotspots equivalentes a MODIS). El intervalo de $80\,\%$ es de cada mes por separado; el total no lleva intervalo (véase la sección~\ref{sec:interv}). Se incluyen el observado de 2025 y el promedio 2013--2025 como referencia.}\label{tab:pron2026}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Mes & Pronóstico & Intervalo de 80\,\% & Observado 2025 & Promedio 2013--2025 \\
+\midrule
+\input{tex/tab_pron2026.tex}
+\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\chapter{Preguntas que puede hacer el jurado}
+
+Cada respuesta es corta y señala dónde está el sustento en este documento.
+
+\begin{description}[leftmargin=1em,style=nextline,itemsep=8pt]
+  \item[¿Por qué no basta un solo factor para todo México?]
+  Porque la razón entre sensores cambia con el mes y con el estado (figura~\ref{fig:knat}). Con un factor único el error por estado y mes es de $24.8\,\%$ y $21.3\,\%$; con factor por estado y mes baja a $12.9\,\%$ y $14.5\,\%$ (tabla~\ref{tab:niveles}).
+
+  \item[¿Cómo sabemos que no está ajustado a los datos que usamos para medir?]
+  Medimos con dos ejercicios en los que el año evaluado no entra al cálculo del factor: dejar un año fuera (2012--2019) y predecir 2020--2025, años que el método no usó (capítulo~\ref{cap:valid}). El único parámetro que miró ambos es $\tau$, y su efecto es de décimas de punto (sección~\ref{sec:tau}).
+
+  \item[¿Por qué una razón de totales y no un promedio de razones?]
+  Porque es el estimador de máxima verosimilitud condicional bajo un modelo de Poisson y no necesita modelar la intensidad del fuego de cada año (sección~\ref{sec:est-razon}); además da más peso a los años con más datos.
+
+  \item[¿Qué es la contracción y por qué $\tau=100$?]
+  Es una media ponderada entre el factor del estado y el nacional del mismo mes, con peso $\sum V/(\sum V+\tau)$ para el estado; equivale a una media a posteriori beta--binomial (sección~\ref{sec:contraccion}). El error es casi igual entre $\tau=30$ y $\tau=300$ (tabla~\ref{tab:tau}).
+
+  \item[¿Por qué descartaron fusionar píxeles de VIIRS y filtrar por FRP?]
+  Porque empeoraron todas las métricas (tabla~\ref{tab:variantes}); el error anual fuera de muestra pasó de $2.1\,\%$ a entre $4.4\,\%$ y $7.6\,\%$.
+
+  \item[¿Qué tan confiable es la parte de 2000--2002?]
+  Es la más incierta: el factor de Terra se calibró con 2003--2011 y se aplica hacia atrás sin posibilidad de comprobarlo (sección~\ref{sec:terra}).
+
+  \item[¿El pronóstico mejora a la climatología?]
+  A escala nacional no de manera apreciable (tabla~\ref{tab:pron-nac}); sí supera con claridad a repetir el año anterior. Por estado supera a la climatología en 22 a 26 de los 32 estados según el horizonte, con diferencias medianas pequeñas (tabla~\ref{tab:pron-est}).
+
+  \item[¿El pronóstico de 2026 es correcto?]
+  No se puede saber con nuestros datos, que terminan en diciembre de 2025. Lo que sí se midió es el desempeño del método de 2020 a 2025 (capítulo~\ref{cap:pron}).
+
+  \item[¿Por qué los intervalos cubren más de $80\,\%$?]
+  A escala nacional cubren de $85$ a $89\,\%$: son algo conservadores. Por estado la cobertura mediana es de $82$ a $85\,\%$, más cercana a lo nominal.
+
+  \item[¿Un hotspot es una hectárea quemada?]
+  No. Es un píxel con anomalía térmica; no mide superficie quemada ni daño (capítulo~\ref{cap:limites}).
+\end{description}
+
+\chapter{Glosario}
+
+\begin{description}[leftmargin=1em,style=nextline,itemsep=6pt]
+  \item[Armonizar.] Llevar los conteos de dos sensores a una unidad común de modo que sean comparables.
+  \item[Climatología.] Promedio histórico de una variable para la misma fecha del calendario.
+  \item[Contracción.] Acercar una estimación ruidosa hacia un valor de referencia más estable, con un peso que depende de la cantidad de datos.
+  \item[FIRMS.] Sistema de la NASA que distribuye detecciones de fuego activo casi en tiempo real.
+  \item[FRP.] Potencia radiativa del fuego, en megavatios.
+  \item[Hotspot.] Píxel de satélite con anomalía térmica compatible con fuego activo.
+  \item[Hotspot equivalente a MODIS.] Unidad común de la serie armonizada: lo que habrían contado Terra y Aqua.
+  \item[LOYO.] Validación cruzada que deja un año fuera (\emph{leave-one-year-out}).
+  \item[Origen.] Último día observado a partir del cual se pronostica.
+  \item[Sesgo.] Tendencia sistemática de un método a sobrestimar o subestimar.
+  \item[Sobredispersión.] Variabilidad de los conteos mayor que la de un modelo de Poisson.
+  \item[WAPE.] Error porcentual absoluto ponderado: suma de errores absolutos entre suma de lo observado.
+\end{description}

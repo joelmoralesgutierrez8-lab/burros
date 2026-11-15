@@ -1,0 +1,89 @@
+\chapter{Diseño de la validación}\label{cap:valid}
+
+Una armonización que solo se mide en los datos con los que se calibró presume un acierto que no tiene: los parámetros ya «vieron» las respuestas. Este capítulo describe cómo medimos el error de forma honesta, y el capítulo~\ref{cap:result} muestra los resultados.
+
+\section{La predicción que se evalúa}
+
+Con los factores calibrados con un conjunto de años $\mathcal{E}$ (entrenamiento), la serie armonizada de un año $y\notin\mathcal{E}$ en la unidad común es
+\begin{align*}
+  \widehat H_{y,m,s}=\widetilde k_{m,s}^{(\mathcal{E})}\;V_{y,m,s},
+\end{align*}
+donde $\widetilde k^{(\mathcal{E})}_{m,s}$ se calculó con la ecuación~\eqref{eq:ktilde} usando solo los años de $\mathcal{E}$. La referencia es lo que MODIS observó, $M_{y,m,s}$. Medimos qué tan lejos queda $\widehat H$ de $M$.
+
+\section{La métrica: error porcentual absoluto ponderado}\label{sec:wape}
+
+\begin{definicion}[WAPE]
+Para un conjunto de celdas $\mathcal{C}$ (por ejemplo, todas las combinaciones año--mes--estado de un periodo),
+\begin{align*}
+  \WAPE(\mathcal{C})=\frac{\sum_{i\in\mathcal{C}}\bigl|\widehat H_i-M_i\bigr|}{\sum_{i\in\mathcal{C}}M_i}.
+\end{align*}
+\end{definicion}
+
+\paragraph{Por qué esta métrica.} Si $\mathrm{APE}_i=|\widehat H_i-M_i|/M_i$ es el error porcentual de cada celda, el WAPE es su promedio ponderado con pesos proporcionales al tamaño observado:
+\begin{align*}
+  \WAPE(\mathcal{C})=\sum_{i\in\mathcal{C}}\frac{M_i}{\sum_{j\in\mathcal{C}}M_j}\,\mathrm{APE}_i.
+\end{align*}
+Las celdas grandes pesan más y las celdas con $M_i=0$ no producen divisiones entre cero, algo que sí ocurre con el error porcentual absoluto medio (MAPE) en celdas con pocos fuegos. Además, tiene una interpretación inmediata: «de cada 100 hotspots de MODIS, nos equivocamos en $x$».
+
+Se calcula en tres niveles de agregación, que responden a preguntas distintas:
+
+\begin{enumerate}[label=\arabic*)]
+  \item \textbf{Por estado y mes} (el más exigente): las celdas son $(y,m,s)$.
+  \item \textbf{Nacional por mes}: primero se suma sobre los estados y luego se compara, $\bigl|\sum_s\widehat H_{y,m,s}-\sum_sM_{y,m,s}\bigr|$.
+  \item \textbf{Nacional por año}: se suma sobre meses y estados,
+    \begin{align*}
+      \WAPE_{\text{anual}}=\frac{\sum_y\bigl|\sum_{m,s}(\widehat H_{y,m,s}-M_{y,m,s})\bigr|}{\sum_{y,m,s}M_{y,m,s}}.
+    \end{align*}
+\end{enumerate}
+
+Además se reporta el \textbf{sesgo} relativo, $\sum(\widehat H-M)/\sum M$, que dice si la serie sistemáticamente sobreestima ($>0$) o subestima ($<0$), y la correlación entre las series mensuales nacionales.
+
+\section{Dos ejercicios de validación}
+
+\subsection{Un año fuera}
+
+Se recorren los años de 2012 a 2019. Para cada año $y_0$ se calibra con los otros siete y se predice el año omitido; es la validación cruzada «dejar un año fuera» (\emph{leave-one-year-out}, LOYO). El error que se reporta es el promedio de las ocho evaluaciones:
+\begin{align*}
+  \overline{\WAPE}_{\mathrm{LOYO}}=\frac{1}{8}\sum_{y_0=2012}^{2019}\WAPE\Bigl(\{(y_0,m,s)\};\;\widetilde k^{(\{2012,\dots,2019\}\setminus\{y_0\})}\Bigr).
+\end{align*}
+Responde: ¿qué tan bien predice el método un año cuyo comportamiento no usó? Su debilidad es que los años omitidos son contemporáneos de los de entrenamiento.
+
+\subsection{Años no vistos}
+
+Se calibra con 2012--2019 y se evalúa en 2020--2025, seis años completos que el método jamás utilizó. Responde: ¿el factor sigue funcionando hacia el futuro? Es el ejercicio más cercano al uso real y, por ello, el que más peso tiene en las conclusiones. Su debilidad es que, al ser un solo bloque, es un único experimento.
+
+\begin{ideaclave}[Por qué los dos]
+El ejercicio de un año fuera usa mucha información (ocho evaluaciones) pero en años parecidos a los de calibración. El ejercicio de años no vistos usa una sola evaluación, pero hacia el futuro. Si el método anduviera bien en uno y mal en el otro, desconfiaríamos de él. Reportamos ambos y vemos que cuentan la misma historia.
+\end{ideaclave}
+
+\section{Cómo interpretar el nivel del error}\label{sec:piso}
+
+Los errores por estado y mes ($\sim\!14\,\%$) son mucho mayores que los anuales nacionales ($\sim\!2\,\%$). Parte de esa diferencia es solo ruido de conteo. Para verlo, suponga que $\widehat k$ es el valor correcto del factor. Entonces el error de una celda, $e=kV-M$, con $V\sim\Pois(\mu)$ y $M\sim\Pois(k\mu)$ independientes, cumple
+\begin{align*}
+  \E[e]=0,\qquad \Var(e)=k^2\mu+k\mu=k(1+k)\,\mu.
+\end{align*}
+Si $e$ es aproximadamente normal, $\E|e|=\sqrt{2/\pi}\,\sqrt{\Var(e)}$. Sustituyendo $\mu$ por $V$ observada y sumando sobre las celdas, el \emph{piso de ruido} del WAPE por estado y mes es
+\begin{align*}
+  \WAPE_{\text{piso}}\approx\frac{\sqrt{2/\pi}\;\sum_{i}\sqrt{k_i(1+k_i)\,V_i}}{\sum_iM_i}.
+\end{align*}
+Para el nivel anual nacional el piso se calcula con la suma de las varianzas de todas las celdas del año, $\sqrt{2/\pi}\sum_y\sqrt{\sum_{m,s}k(1+k)V}/\sum M$, porque los errores de signo opuesto se compensan al sumar.
+
+\begin{ejemplo}[Piso de ruido en 2020--2025]
+Con los datos de los años no vistos, el piso es de \pisoSM{}\,\% por estado y mes y de \pisoAN{}\,\% anual nacional. Se observó $14.5\,\%$ y $2.1\,\%$. Así que alrededor de un tercio del error por estado y mes es ruido de Poisson inevitable; el resto (y casi todo el error anual) es variación sistemática del factor de un año a otro y sobredispersión.
+\end{ejemplo}
+
+Esta cuenta es una referencia de orden de magnitud, no una descomposición exacta: supone Poisson e independencia, y ya vimos que los conteos reales están sobredispersos.
+
+\section{Qué comparamos}
+
+\begin{enumerate}[label=\arabic*)]
+  \item \textbf{Nivel de factor}: un factor único para todo México y todo el año; un factor por mes (nacional); o un factor por estado y mes con contracción.
+  \item \textbf{Variantes del conteo de VIIRS}: fusionar los píxeles de VIIRS que caen dentro de la huella de 1 km, y descartar detecciones con baja potencia radiativa (FRP).
+  \item \textbf{Terra a Terra más Aqua}, con la misma lógica de dejar un año fuera dentro de 2003--2011.
+\end{enumerate}
+
+Las variantes de conteo se construyen así. «Fusionar» conserva una sola detección por satélite, fecha, indicador día o noche y celda de $0.01^\circ$ (la de mayor FRP), para imitar el píxel de 1 km de MODIS; en la práctica solo afecta de manera apreciable a VIIRS. El umbral de FRP elimina las detecciones de VIIRS con potencia menor que 2, 4 o 6 MW. Ambas son ideas razonables (compensar la resolución de VIIRS) que ponemos a prueba, no suposiciones.
+
+\begin{ideaclave}[Idea clave del capítulo]
+Medimos el error con el WAPE en tres niveles (estado--mes, nacional--mes, nacional--año) y con dos ejercicios: dejar un año fuera (2012--2019) y predecir años que el método nunca vio (2020--2025). Una parte del error es ruido de Poisson que ningún método elimina; por eso las comparaciones entre métodos se hacen en los mismos datos.
+\end{ideaclave}
